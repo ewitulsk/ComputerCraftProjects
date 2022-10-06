@@ -80,22 +80,27 @@ function wait(time)
 
 end
 
-function pullMsg()
+function pullMsg(msgHandler)
+  openModem()
   while true do
     event, side, frequency, replyFrequency, message, distance = os.pullEvent()
 
     if(event == "modem_message") then
-      print("Message: " .. message)
+      msgHandler(side, frequency, replyFrequency, message, distance)
     end
   end
 end
 
+function printMsg(side, frequency, replyFrequency, message, distance)
+  print("Message: " .. message)
+end
+
 function main()
 
-  if(args[1] == "-l") then
-    pullMsg()
+  if(args[1] == "-t") then
+    pullMsg(printMsg)
   else
-    sendMsg("Bob", "Bob is gay")
+    sendMsg("Bob", "Bob is here")
   end
 end
 
