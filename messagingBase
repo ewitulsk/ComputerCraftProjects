@@ -1,0 +1,102 @@
+if(periphemu) then
+  periphemu.create("bottom", "modem", 0) -- attaches modem to the bottom of computer on newtwork id 0
+end
+
+--tes = peripheral.wrap("back")
+modem = peripheral.wrap("bottom")
+
+NAME = os.getComputerLabel()
+MODEM_CHAN = 3
+
+args = { ... }
+
+function split(input, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  str = string.gmatch(input, "([^"..sep.."]+)")
+  return str
+end
+
+function parseMsg(msg)
+  msgT = {}
+  commaSplit = split(msg, ",")
+  for str in commaSplit do
+    colonSplit = split(str, ":")
+    i = 0
+    k = ""
+    v = ""
+    for str in colonSplit do
+      if i==1 then
+        v=str
+      end
+      
+      if i==0 then
+        k=str
+      end
+      msgT[k]=v
+      i=i+1
+    end 
+  end
+  return msgT    
+end
+
+function createMsg(reciever, msg)
+  str = "S:" .. NAME .. ",R:" .. reciever .. ",M:" .. msg
+  return str
+end
+
+function openModem()
+  if(not modem.isOpen(MODEM_CHAN)) then
+    modem.open(MODEM_CHAN)
+  end
+  if(modem.isOpen) then
+    print("Modem Opened!")
+    return
+  end
+  print("Failed to open modem on channel: " .. MODEM_CHAN .. " quitting...")
+  os.exit()
+end
+
+function sendMsg(reciever, msg)
+  openModem()
+  msg = createMsg(reciever, msg)
+  modem.transmit(MODEM_CHAN, MODEM_CHAN, msg)
+end
+
+function wait(time)
+  timer = os.startTimer(time)
+
+  while true do
+    event, param1, param2, param3, param4, param5 = os.pullEvent()
+    if(event == "timer" and param1) then --param1 is timer id
+      print("Handle Timer...")
+      break
+    elseif(event == "modem_message") then
+      side, frequency, replyFrequency, message, distance = param1, param2, param3, param4, param5
+      print("Message: " .. message)
+    end
+  end
+
+end
+
+function pullMsg()
+  while true do
+    event, side, frequency, replyFrequency, message, distance = os.pullEvent()
+
+    if(event == "modem_message") then
+      print("Message: " .. message)
+    end
+  end
+end
+
+function main()
+
+  if(args[1] == "-l") then
+    pullMsg()
+  else
+    sendMsg("Bob", "Bob is gay")
+  end
+end
+
+main()

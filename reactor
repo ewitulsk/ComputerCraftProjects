@@ -1,0 +1,41 @@
+reactor = peripheral.wrap("back")
+maxRF = 10000000
+
+function getPR()
+  RF = reactor.getEnergyStored()
+  PR = RF/maxRF
+  return PR
+  end
+
+function main()
+  if(reactor.getConnected())
+  then
+    
+    PR = getPR()
+    print("Reactor Connected")
+    print("Init PR: " .. PR)
+    
+    while(true)
+    do
+      PR = getPR()
+      isOn = reactor.getActive()
+      if(PR <= .5 and not isOn )
+      then
+        print("Enabling Reactor")
+        reactor.setActive(true)  
+      end
+      
+      if(PR > .9 and isOn)
+      then
+        print("Disabling Reactor")
+        reactor.setActive(false)        
+      end
+      os.sleep(5)     
+    end
+
+  else
+    print("Reactor Not Connected")
+  end
+  
+  end
+main() 
